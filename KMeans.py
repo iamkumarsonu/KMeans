@@ -29,7 +29,6 @@ def euclideanDistance(x,y,*method):
         for i in range(0,len(x)):
             distance += (x[i]-y[i])**2  
         return distance**0.5
-    
 def randomint(K,lenofData):
     return [randint(0,lenofData) for i in range(0,K)]
 
@@ -48,7 +47,7 @@ def clusterAssignment(tensor,centroidDict,columns):
     distanceMatrix = []
     for dataIndex in range(0,len(tensor)):
         distanceMatrix.append([euclideanDistance(centroidDict[i],tensor[dataIndex]) for i in range(0,noOfCluster)])   
-    cluster_assignment = [val.index(max(val)) for val in distanceMatrix]
+    cluster_assignment = [val.index(min(val)) for val in distanceMatrix]
     finalDF = pd.concat([pd.DataFrame(tensor),pd.DataFrame(cluster_assignment,columns=['Cluster'])],axis=1)
     finalDF.columns = columns+['Cluster']
     return finalDF,centroidDict
@@ -70,7 +69,7 @@ class Kmeans():
         self.noIteration = noIteration
     def ModelFit(self):
         total_centroids = []
-        if self.K==0:
+        if self.K<1:
             return "Please Assign 2 or More Clusters"
         else:
             for iterval in range(0,self.noIteration):
@@ -83,32 +82,19 @@ class Kmeans():
                     finalDF,centroidDict = clusterAssignment(tensor,centroidDict,self.columns)
                     centroidDict = centroidReassignment(finalDF)
                     total_centroids.append(centroidDict)
-                    print(centroidDict)
         self.data['Cluster'] = finalDF['Cluster']
         return centroidDict,self.data,total_centroids
         
 '''K Means Basic Ends'''        
-currCentroids,outputData,allCentroids = Kmeans(data,['mean_dist_day','mean_over_speed_perc'],3,10).ModelFit()
-    
+currCentroids,outputData,allCentroids = Kmeans(data,['mean_dist_day','mean_over_speed_perc'],10,10).ModelFit()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# Plot the data with the cluster labels
+plt.scatter(outputData['mean_dist_day'], outputData['mean_over_speed_perc'], c=outputData['Cluster'])
+plt.xlabel('mean_dist_day')
+plt.ylabel('mean_over_speed_perc')
+plt.title('K-Means Clustering')
+plt.show()
 
 
 
